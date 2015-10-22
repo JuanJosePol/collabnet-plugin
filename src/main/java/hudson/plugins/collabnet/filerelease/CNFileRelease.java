@@ -22,6 +22,7 @@ import hudson.plugins.collabnet.documentuploader.FilePattern;
 import hudson.plugins.collabnet.util.CNFormFieldValidator;
 import hudson.plugins.collabnet.util.CNHudsonUtil;
 import hudson.plugins.collabnet.util.ComboBoxUpdater;
+import hudson.plugins.collabnet.util.CommonUtil;
 import hudson.remoting.VirtualChannel;
 import hudson.tasks.BuildStepMonitor;
 import hudson.util.ComboBoxModel;
@@ -59,7 +60,7 @@ public class CNFileRelease extends AbstractTeamForgeNotifier {
     private String description = "";
     private static final String RELEASE_STATUS_ACTIVE = "active";
     private static final String MATURITY_NONE = "";
-    
+        
     /**
      * Creates a new CNFileRelease object.
      *
@@ -123,14 +124,14 @@ public class CNFileRelease extends AbstractTeamForgeNotifier {
     public String getPkg() {
         return this.rpackage;
     }
-
+    
     /**
      * @return the release where the files are uploaded.
      */
     public String getRelease() {
         return this.release;
     }
-
+    
     /**
      * @return whether or not existing files should be overwritten.
      */
@@ -178,9 +179,10 @@ public class CNFileRelease extends AbstractTeamForgeNotifier {
         }
         
         EnvVars envVars = build.getEnvironment(listener);
-        release = envVars.expand(release);
+        String packageName = CommonUtil.getInterpreted(envVars, rpackage);
+        String releaseName = CommonUtil.getInterpreted(envVars, release);
         
-        CTFRelease release = this.getReleaseObject();
+        CTFRelease release = this.getReleaseObject(packageName, releaseName);
         if (release == null) {
             Result previousBuildStatus = build.getResult();
             build.setResult(previousBuildStatus.combine(Result.UNSTABLE));
@@ -224,7 +226,7 @@ public class CNFileRelease extends AbstractTeamForgeNotifier {
         int numUploaded = 0;
         this.logConsole("Uploading file to project '" + this.getProject() +
                  "', package '" + this.getPkg() + "', release '" +
-                 this.getRelease() + "' on host '" + this.getCollabNetUrl() + 
+                 release.getTitle() + "' on host '" + this.getCollabNetUrl() + 
                  "' as user '" + this.getUsername() + "'.");
         // upload files
         for (FilePattern uninterp_fp : this.getFilePatterns()) {
@@ -384,7 +386,7 @@ public class CNFileRelease extends AbstractTeamForgeNotifier {
      *
      * @return the id for the release.
      */
-    public CTFRelease getReleaseObject() throws RemoteException {
+    public CTFRelease getReleaseObject(String packageName, String releaseName) throws RemoteException {
         CTFProject projectId = this.getProjectObject();
         if (projectId == null) {
             this.logConsole("Critical Error: projectId cannot be found for " +
@@ -394,24 +396,24 @@ public class CNFileRelease extends AbstractTeamForgeNotifier {
                      "Setting build status to UNSTABLE (or worse).");
             return null;
         }
-        CTFPackage pkg = projectId.getPackages().byTitle(getPkg());
+        CTFPackage pkg = projectId.getPackages().byTitle(packageName);
         if (pkg == null) {
             this.logConsole("Critical Error: packageId cannot be found for " +
-                     this.getPkg() + ".  " +
+                     packageName + ".  " +
                      "Setting build status to UNSTABLE (or worse).");
             return null;
         }
-        CTFRelease release = pkg.getReleaseByTitle(getRelease());
+        CTFRelease release = pkg.getReleaseByTitle(releaseName);
         if (release == null) {
-            release = pkg.createRelease(getRelease(), description, RELEASE_STATUS_ACTIVE, MATURITY_NONE);
+            release = pkg.createRelease(releaseName, description, RELEASE_STATUS_ACTIVE, MATURITY_NONE);
             this.logConsole("Note: releaseId cannot be found for " +
-                     this.getRelease() + ".  " +
+                     releaseName + ".  " +
                      "Creating a new release with specified releaseId. Setting build status to STABLE.");
             return release;
         }
         return release;
     }
-
+    
     /**
      * Get the project id for the project name.
      * 
