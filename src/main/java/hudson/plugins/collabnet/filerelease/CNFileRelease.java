@@ -7,6 +7,8 @@ import com.collabnet.ce.webservices.CTFProject;
 import com.collabnet.ce.webservices.CTFRelease;
 import com.collabnet.ce.webservices.CTFReleaseFile;
 import com.collabnet.ce.webservices.CollabNetApp;
+
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.FilePath.FileCallable;
@@ -174,6 +176,10 @@ public class CNFileRelease extends AbstractTeamForgeNotifier {
             build.addAction(this.createAction(0, null));
             return false;
         }
+        
+        EnvVars envVars = build.getEnvironment(listener);
+        release = envVars.expand(release);
+        
         CTFRelease release = this.getReleaseObject();
         if (release == null) {
             Result previousBuildStatus = build.getResult();
