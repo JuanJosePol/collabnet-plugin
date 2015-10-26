@@ -24,6 +24,8 @@ import hudson.remoting.VirtualChannel;
 import hudson.tasks.BuildStepMonitor;
 import hudson.util.ComboBoxModel;
 import hudson.util.FormValidation;
+import hudson.util.ListBoxModel;
+
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.jenkinsci.remoting.RoleChecker;
@@ -39,6 +41,7 @@ import java.rmi.RemoteException;
  * to the CollabNet File Release System.
  */
 public class CNFileRelease extends AbstractTeamForgeNotifier {
+	
     // listener is used for logging and will only be
     // set at the beginning of perform.
     private transient BuildListener listener = null;
@@ -54,9 +57,11 @@ public class CNFileRelease extends AbstractTeamForgeNotifier {
     private boolean overwrite;
     private FilePattern[] file_patterns;
 
-    private String description = "";
-    private static final String RELEASE_STATUS_ACTIVE = "active";
-    private static final String MATURITY_NONE = "";
+    private String description;
+    private String status;
+    private String maturity;
+//    private static final String RELEASE_STATUS_ACTIVE = "active";
+//    private static final String MATURITY_NONE = "";
     
     /**
      * Creates a new CNFileRelease object.
@@ -74,10 +79,14 @@ public class CNFileRelease extends AbstractTeamForgeNotifier {
     @DataBoundConstructor
     public CNFileRelease(ConnectionFactory connectionFactory,
                          String project, String pkg, String release,
+                         String description, String status, String maturity,
                          boolean overwrite, FilePattern[] filePatterns) {
         super(connectionFactory,project);
         this.rpackage = pkg;
         this.release = release;
+        this.description = description;
+        this.status = status;
+        this.maturity = maturity;
         this.overwrite = overwrite;
         this.file_patterns = filePatterns;
     }
@@ -129,6 +138,26 @@ public class CNFileRelease extends AbstractTeamForgeNotifier {
         return this.release;
     }
 
+    /**
+     * @return the description for this release.
+     */
+    public String getDescription() {
+    	return this.description;
+    }
+    
+    /**
+     * @return the status of the release.
+     */
+    public String getStatus() {
+    	return this.status;
+    }
+    
+    /**
+     * @return the maturity of the release.
+     */
+    public String getMaturity() {
+    	return this.maturity;
+    }
     /**
      * @return whether or not existing files should be overwritten.
      */
@@ -397,7 +426,7 @@ public class CNFileRelease extends AbstractTeamForgeNotifier {
         }
         CTFRelease release = pkg.getReleaseByTitle(getRelease());
         if (release == null) {
-            release = pkg.createRelease(getRelease(), description, RELEASE_STATUS_ACTIVE, MATURITY_NONE);
+            release = pkg.createRelease(getRelease(), description, status, maturity);
             this.logConsole("Note: releaseId cannot be found for " +
                      this.getRelease() + ".  " +
                      "Creating a new release with specified releaseId. Setting build status to STABLE.");
@@ -467,6 +496,34 @@ public class CNFileRelease extends AbstractTeamForgeNotifier {
         public ComboBoxModel doFillReleaseItems(CollabNetApp cna,
                 @QueryParameter String project, @QueryParameter("pkg") String _package) throws RemoteException {
             return ComboBoxUpdater.getReleases(cna,project,_package);
+        }
+    
+        /**
+		 * Populate the list of release status.
+         */
+        public ListBoxModel doFillStatusItems(CollabNetApp cna) {
+        	ListBoxModel items = new ListBoxModel();
+        	items.add("Active", "active");
+        	items.add("Pending", "pending");
+        	return items;
+        }
+        
+        /**
+         * Populate the list of maturity levels.
+         */
+        public ListBoxModel doFillMaturityItems(CollabNetApp cna) {
+        	ListBoxModel items = new ListBoxModel();
+        	items.add("None", "None");
+        	items.add("Prototype", "Prototype");
+        	items.add("Development Build", "DevelopmentBuild");
+        	items.add("Alpha", "Alpha");
+        	items.add("Beta", "Beta");
+        	items.add("Early Access", "Early Access");
+        	items.add("Pre-General Availability", "Pre-General Availability");
+        	items.add("General Availability", "General Availability");
+        	items.add("Stable", "Stable");
+        	items.add("Obsolete", "Obsolete");
+        	return items;
         }
     }
 }
