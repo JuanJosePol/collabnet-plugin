@@ -1,13 +1,13 @@
 package com.collabnet.ce.webservices;
 
-import com.collabnet.ce.soap50.webservices.frs.FrsFileSoapDO;
-import com.collabnet.ce.soap50.webservices.frs.FrsFileSoapRow;
-import com.collabnet.ce.soap50.webservices.frs.ReleaseSoapDO;
-import com.collabnet.ce.soap50.webservices.frs.ReleaseSoapRow;
-
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.collabnet.ce.soap50.webservices.frs.FrsFileSoapRow;
+import com.collabnet.ce.soap50.webservices.frs.IFrsAppSoap;
+import com.collabnet.ce.soap50.webservices.frs.ReleaseSoapDO;
+import com.collabnet.ce.soap50.webservices.frs.ReleaseSoapRow;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -52,4 +52,15 @@ public class CTFRelease extends CTFFolder {
         return new CTFReleaseFile(this,app.getFrsAppSoap().createFrsFile(app.getSessionId(), getId(), fileName, mimeType, file.getId()));
     }
 
+    /**
+     * Overwrite the details of the release.
+     */
+    public void setDetails(String description, String status, String maturity) throws RemoteException {
+    	IFrsAppSoap frsAppSoap = app.getFrsAppSoap();
+    	ReleaseSoapDO releaseDetails = frsAppSoap.getReleaseData(app.getSessionId(), getId());
+    	releaseDetails.setDescription(description);
+    	releaseDetails.setStatus(status);
+    	releaseDetails.setMaturity(maturity);
+    	frsAppSoap.setReleaseData(app.getSessionId(), releaseDetails);
+    }
 }

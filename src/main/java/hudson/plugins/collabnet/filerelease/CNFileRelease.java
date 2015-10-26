@@ -60,8 +60,6 @@ public class CNFileRelease extends AbstractTeamForgeNotifier {
     private String description;
     private String status;
     private String maturity;
-//    private static final String RELEASE_STATUS_ACTIVE = "active";
-//    private static final String MATURITY_NONE = "";
     
     /**
      * Creates a new CNFileRelease object.
@@ -71,6 +69,9 @@ public class CNFileRelease extends AbstractTeamForgeNotifier {
      * @param pkg where the files will be uploaded.  The package contains
      *                the release.
      * @param release where the files will be uploaded.
+     * @param description of the release.
+     * @param status of the release (active or pending).
+     * @param maturity level of the release.
      * @param overwrite whether or not to overwrite existing files.
      * @param filePatterns Any files in the Jenkins workspace that match these 
      *                     ant-style patterns will be uploaded to the 
@@ -203,6 +204,7 @@ public class CNFileRelease extends AbstractTeamForgeNotifier {
             build.addAction(this.createAction(0, null));
             return false;
         }
+        // FIXME this is setting the release details twice. Once when its created and another time in release.setDetails(...).
         CTFRelease release = this.getReleaseObject();
         if (release == null) {
             Result previousBuildStatus = build.getResult();
@@ -210,6 +212,8 @@ public class CNFileRelease extends AbstractTeamForgeNotifier {
             this.logoff();
             build.addAction(this.createAction(0, release));
             return false;
+        } else {
+        	release.setDetails(description, status, maturity);
         }
         // now that we have the releaseId, we can do the upload.
         int numUploaded = this.uploadFiles(build, release);
