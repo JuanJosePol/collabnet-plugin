@@ -36,12 +36,12 @@ public class CNFileReleaseTest extends CNHudsonTestCase {
 
         roundtripAndAssertIntegrity(new CNFileRelease(
                 createConnectionFactory(),
-                "aaa", "bbb", "ccc", true, new FilePattern[]{new FilePattern("ddd")}),FIELDS);
+                "aaa", "bbb", "ccc", "description", "active", "Development Build", true, new FilePattern[]{new FilePattern("ddd")}),FIELDS);
         // note that because filePatterns is minimum 1, new FilePattern[0] test would fail
 
         roundtripAndAssertIntegrity(new CNFileRelease(
                 null,
-                "xxx", "yyy", "zzz", false, new FilePattern[]{new FilePattern("111"),new FilePattern("222")}),FIELDS);
+                "xxx", "yyy", "zzz", "description", "active", "Development Build", false, new FilePattern[]{new FilePattern("111"),new FilePattern("222")}),FIELDS);
     }
 
     /**
@@ -69,7 +69,8 @@ public class CNFileReleaseTest extends CNHudsonTestCase {
         FreeStyleProject job = this.createFreeStyleProject();
         job.getPublishersList().add(new CNFileRelease(
                 new ConnectionFactory(teamforge_url, admin_user, password),
-                teamforge_project, fr_package, fr_release, true,
+                teamforge_project, fr_package, fr_release,
+                "desription", "active", "Development Build", true,
                 new FilePattern[]{new FilePattern(FILE)}
         ));
         job.getBuildersList().add(new TestBuilder() {
