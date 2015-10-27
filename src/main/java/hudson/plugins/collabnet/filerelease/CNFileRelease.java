@@ -211,9 +211,10 @@ public class CNFileRelease extends AbstractTeamForgeNotifier {
         EnvVars envVars = build.getEnvironment(listener);
         String packageName = CommonUtil.getInterpreted(envVars, rpackage);
         String releaseName = CommonUtil.getInterpreted(envVars, release);
+        String descriptionText = CommonUtil.getInterpreted(envVars, description);
         
         // FIXME this is setting the release details twice. Once when its created and another time in release.setDetails(...).
-        CTFRelease release = this.getReleaseObject(packageName, releaseName);
+        CTFRelease release = this.getReleaseObject(packageName, releaseName, descriptionText);
         if (release == null) {
             Result previousBuildStatus = build.getResult();
             build.setResult(previousBuildStatus.combine(Result.UNSTABLE));
@@ -221,7 +222,7 @@ public class CNFileRelease extends AbstractTeamForgeNotifier {
             build.addAction(this.createAction(0, release));
             return false;
         } else {
-        	release.setDetails(description, status, maturity);
+        	release.setDetails(descriptionText, status, maturity);
         }
         // now that we have the releaseId, we can do the upload.
         int numUploaded = this.uploadFiles(build, release);
@@ -419,7 +420,7 @@ public class CNFileRelease extends AbstractTeamForgeNotifier {
      *
      * @return the id for the release.
      */
-    public CTFRelease getReleaseObject(String packageName, String releaseName) throws RemoteException {
+    public CTFRelease getReleaseObject(String packageName, String releaseName, String descriptionText) throws RemoteException {
         CTFProject projectId = this.getProjectObject();
         if (projectId == null) {
             this.logConsole("Critical Error: projectId cannot be found for " +
@@ -438,7 +439,7 @@ public class CNFileRelease extends AbstractTeamForgeNotifier {
         }
         CTFRelease release = pkg.getReleaseByTitle(releaseName);
         if (release == null) {
-            release = pkg.createRelease(getRelease(), description, status, maturity);
+        	release = pkg.createRelease(releaseName, descriptionText, status, maturity);
             this.logConsole("Note: releaseId cannot be found for " +
                      releaseName + ".  " +
                      "Creating a new release with specified releaseId. Setting build status to STABLE.");
