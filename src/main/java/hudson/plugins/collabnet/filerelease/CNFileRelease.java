@@ -162,6 +162,7 @@ public class CNFileRelease extends AbstractTeamForgeNotifier {
     public String getMaturity() {
     	return this.maturity;
     }
+    
     /**
      * @return whether or not existing files should be overwritten.
      */
@@ -526,16 +527,15 @@ public class CNFileRelease extends AbstractTeamForgeNotifier {
          */
         public ListBoxModel doFillMaturityItems(CollabNetApp cna) {
         	ListBoxModel items = new ListBoxModel();
-        	items.add("None", "None");
-        	items.add("Prototype", "Prototype");
-        	items.add("Development Build", "DevelopmentBuild");
-        	items.add("Alpha", "Alpha");
-        	items.add("Beta", "Beta");
-        	items.add("Early Access", "Early Access");
-        	items.add("Pre-General Availability", "Pre-General Availability");
-        	items.add("General Availability", "General Availability");
-        	items.add("Stable", "Stable");
-        	items.add("Obsolete", "Obsolete");
+        	items.add("Prototype");
+        	items.add("Development Build");
+        	items.add("Alpha");
+        	items.add("Beta");
+        	items.add("Early Access");
+        	items.add("Pre-General Availability");
+        	items.add("General Availability");
+        	items.add("Stable");
+        	items.add("Obsolete");
         	return items;
         }
     }
